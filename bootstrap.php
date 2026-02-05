@@ -9,8 +9,18 @@ ini_set('session.use_strict_mode', 1);
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_samesite', 'Lax');
 session_start();
+
+require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
-$db = get_db();
+
+require_once __DIR__ . '/src/models.php';
+
+// 4. Load Utilities (Functions)
+// Validation and Helpers are used by Controllers and Services
+require_once __DIR__ . '/src/utils/helpers.php';
+require_once __DIR__ . '/src/utils/validation.php';
+
+require_once __DIR__ . '/src/service/user.php';
 
 if (!isset($_SESSION['csrf_token'])){
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -20,6 +30,7 @@ function redirect($url){
     header("Location: " . $url);
     exit();
 }
+
 
 function flash_message($message, $category = 'info'){
     if (!isset($_SESSION['flash_messages']))
@@ -54,7 +65,6 @@ function login_user($user){
     session_regenerate_id(true);
     flash_message("Login Successful", "success");
     $current_user = $user;
-    redirect('/');
 }
 
 function login_required(){
@@ -78,6 +88,6 @@ function get_authenticated_user(){
 
 function render_view($view_path, $data=array()){
     extract($data);
-    include __DIR__ . '/views/' . $view_path;
+    require_once __DIR__ . '/src/views/' . $view_path;
 }
 ?>
