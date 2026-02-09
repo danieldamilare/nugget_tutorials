@@ -20,6 +20,7 @@ require_once __DIR__ . '/src/models.php';
 require_once __DIR__ . '/src/utils/helpers.php';
 require_once __DIR__ . '/src/utils/validation.php';
 
+require_once __DIR__ . '/src/service/email.php';
 require_once __DIR__ . '/src/service/user.php';
 
 if (!isset($_SESSION['csrf_token'])){

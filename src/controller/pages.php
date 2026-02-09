@@ -12,31 +12,31 @@ class PageController{
         );
     }
 
-    public static function courses (){
-        $courses = CourseService::get_all_courses();
-        render_view('course.php',
-            ['title' => 'OUr Courses',
-             'courses' => $courses]
-            );
-    }
-
     public static function contact(){
-        if ($_SERVER['REQUEST_METHOD'] = 'POST'){
+        if ($_SERVER['REQUEST_METHOD'] == 'POST'){
             error_log("Processing contact form POST request");
-            $email = filter_var(trim($_POST['email']), FILTER_VALIDATE_EMAIL);
-            $name = trim($_POST['name']);
-            $message  = trim($_POST['message']);
-            error_log("Contact form details: Name=$name, Email=$email, Message=$message");
-            $error_arr = array();
 
             if (empty($name) || empty($email) || empty($message)){
-                error_log("Contact form validation failed: Missing fields");
+                error_log("Contact form validation failed: Missing email");
                 $error_arr['general'] = "All fields required";
-            }
-            else{
+                render_view('contact.php',[
+                    'title' => 'Contact Us',
+                    'error_arr' => $error_arr]);
+                return;
+            } else if (($email = filter_var(trim($_POST['email']), FILTER_VALIDATE_EMAIL)) === false) {
+                    error_log("Contact form validation failed: Invalid email format");
+                    $error_arr['general'] = "Invalid email address";
+            } else{
+
+                $name = trim($_POST['name']);
+                $message  = trim($_POST['message']);
+                error_log("Contact form details: Name=$name, Email=$email, Message=$message");
+                $error_arr = array();
+
                 $admin_email = ADMIN_EMAIL;
 
                 $subject = "New Contact Inquiry from $name";
+                $email_service = new EmailService();
 
                 $html_content = "
                     <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee;'>
@@ -49,7 +49,7 @@ class PageController{
                     </div>
                 ";
                 error_log("Prepared email content for contact form.");
-                $success = send_email($admin_email, $subject, $html_content);
+                $success = $email_service->send_email($admin_email, $subject, $html_content);
                 error_log("Email send function returned: " . ($success ? "success" : "failure"));
 
                 if ($success) {
@@ -68,5 +68,4 @@ class PageController{
             'error_arr' => $error_arr]);
     }
 }
-
 ?>
